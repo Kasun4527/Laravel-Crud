@@ -7,6 +7,102 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js for dropdown functionality -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <style>
+        /* Custom DataTables styling with Tailwind */
+        .dataTables_wrapper {
+            @apply w-full bg-white rounded-lg shadow-sm;
+        }
+        
+        /* Search and Length Menu Styling */
+        .dataTables_length, .dataTables_filter {
+            @apply p-4;
+        }
+        
+        .dataTables_length select {
+            @apply block rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm mx-2 !important;
+            min-width: 80px;
+        }
+        
+        .dataTables_filter input {
+            @apply block rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ml-2 !important;
+            min-width: 200px;
+        }
+        
+        /* Table Header Styling */
+        table.dataTable thead th {
+            @apply bg-gray-50 text-gray-600 text-sm font-semibold px-6 py-4 border-b border-gray-200 !important;
+        }
+        
+        /* Table Body Styling */
+        table.dataTable tbody td {
+            @apply px-6 py-4 text-gray-800 border-b border-gray-100 !important;
+        }
+        
+        table.dataTable tbody tr:hover {
+            @apply bg-blue-50/50 transition duration-150 !important;
+        }
+        
+        /* Pagination Styling */
+        .dataTables_paginate {
+            @apply p-4 flex items-center justify-end space-x-2 !important;
+        }
+        
+        .paginate_button {
+            @apply px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 !important;
+        }
+        
+        .paginate_button.current {
+            @apply bg-blue-50 text-blue-600 border-blue-500 !important;
+        }
+        
+        .paginate_button.disabled {
+            @apply opacity-50 cursor-not-allowed !important;
+        }
+        
+        /* Info Styling */
+        .dataTables_info {
+            @apply p-4 text-sm text-gray-700 !important;
+        }
+        
+        /* Responsive Table Styling */
+        table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
+            @apply bg-blue-500 hover:bg-blue-600 rounded-full !important;
+            margin-top: 0 !important;
+        }
+        
+        /* Custom Scrollbar */
+        .dataTables_wrapper .dataTables_scroll {
+            @apply overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100;
+        }
+        
+        /* Button Styling */
+        .dt-button {
+            @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 !important;
+        }
+        
+        /* Sorting Icons */
+        table.dataTable thead .sorting:before,
+        table.dataTable thead .sorting_asc:before,
+        table.dataTable thead .sorting_desc:before {
+            @apply opacity-50;
+        }
+        
+        /* Even/Odd Row Styling */
+        table.dataTable tbody tr:nth-child(even) {
+            @apply bg-gray-50/50;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
@@ -58,12 +154,6 @@
                             </div>
                             <div x-show="open" 
                                  @click.away="open = false"
-                                 x-transition:enter="transition ease-out duration-100"
-                                 x-transition:enter-start="transform opacity-0 scale-95"
-                                 x-transition:enter-end="transform opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="transform opacity-100 scale-100"
-                                 x-transition:leave-end="transform opacity-0 scale-95"
                                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                                  role="menu">
                                 <div class="px-4 py-2 text-xs text-gray-500">
@@ -108,30 +198,8 @@
                     Customers
                 </a>
             </div>
-            <div class="pt-4 pb-3 border-t border-gray-200">
-                <div class="flex items-center px-4">
-                    <div class="flex-shrink-0">
-                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
-                            <span class="text-sm font-medium leading-none text-blue-700">
-                                {{ substr(Auth::user()->name, 0, 1) }}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="ml-3">
-                        <div class="text-base font-medium text-gray-800">{{ Auth::user()->name }}</div>
-                        <div class="text-sm font-medium text-gray-500">{{ Auth::user()->email }}</div>
-                    </div>
-                </div>
-                <div class="mt-3 space-y-1">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                            Sign out
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @else
+            @endauth
+            @guest
             <div class="pt-2 pb-3 space-y-1">
                 <a href="{{ route('login') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300">
                     Login
@@ -150,5 +218,8 @@
             @yield('content')
         </div>
     </main>
+
+    <!-- Scripts -->
+    @stack('scripts')
 </body>
 </html> 
