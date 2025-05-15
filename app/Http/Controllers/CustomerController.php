@@ -12,8 +12,15 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $customers = Customer::latest()->paginate(10);
-        return view('customers.index', compact('customers'));
+        if (request()->ajax()) {
+            $customers = Customer::latest()->get();
+            return response()->json([
+                'customers' => $customers
+            ]);
+        }
+
+        $trashedCustomers = Customer::onlyTrashed()->latest()->get();
+        return view('customers.index', compact('trashedCustomers'));
     }
 
     /**
@@ -31,10 +38,18 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:20',
+            'contact_number' => 'required|string|max:20'
         ]);
 
-        Customer::create($validated);
+        $customer = Customer::create($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer created successfully.',
+                'customer' => $customer
+            ]);
+        }
 
         return redirect()->route('customers.index')
             ->with('success', 'Customer created successfully.');
@@ -45,6 +60,10 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
+        if (request()->ajax()) {
+            return response()->json($customer);
+        }
+
         return view('customers.edit', compact('customer'));
     }
 
@@ -55,10 +74,18 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:20',
+            'contact_number' => 'required|string|max:20'
         ]);
 
         $customer->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer updated successfully.',
+                'customer' => $customer
+            ]);
+        }
 
         return redirect()->route('customers.index')
             ->with('success', 'Customer updated successfully.');
@@ -71,7 +98,47 @@ class CustomerController extends Controller
     {
         $customer->delete();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer moved to trash successfully.'
+            ]);
+        }
+
         return redirect()->route('customers.index')
-            ->with('success', 'Customer deleted successfully.');
+            ->with('success', 'Customer moved to trash successfully.');
+    }
+
+    public function restore($id)
+    {
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->restore();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer restored successfully.',
+                'customer' => $customer
+            ]);
+        }
+
+        return redirect()->route('customers.index')
+            ->with('success', 'Customer restored successfully.');
+    }
+
+    public function forceDelete($id)
+    {
+        $customer = Customer::onlyTrashed()->findOrFail($id);
+        $customer->forceDelete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer permanently deleted.'
+            ]);
+        }
+
+        return redirect()->route('customers.index')
+            ->with('success', 'Customer permanently deleted.');
     }
 } 

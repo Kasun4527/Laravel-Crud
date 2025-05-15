@@ -25,4 +25,6 @@ Route::middleware('auth')->group(function () {
 
     // Customer routes
     Route::resource('customers', CustomerController::class);
+    Route::patch('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+    Route::delete('customers/{customer}/force-delete', [CustomerController::class, 'forceDelete'])->name('customers.force-delete');
 });
