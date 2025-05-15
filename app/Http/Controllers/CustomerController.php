@@ -13,9 +13,12 @@ class CustomerController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $customers = Customer::latest()->get();
+            $customers = Customer::whereNull('deleted_at')->latest()->get();
             return response()->json([
-                'customers' => $customers
+                'draw' => request()->input('draw', 1),
+                'recordsTotal' => $customers->count(),
+                'recordsFiltered' => $customers->count(),
+                'data' => $customers
             ]);
         }
 
@@ -45,8 +48,8 @@ class CustomerController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Customer created successfully.',
+                'status' => 'success',
+                'message' => 'Customer created successfully',
                 'customer' => $customer
             ]);
         }
@@ -81,8 +84,8 @@ class CustomerController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Customer updated successfully.',
+                'status' => 'success',
+                'message' => 'Customer updated successfully',
                 'customer' => $customer
             ]);
         }
@@ -100,8 +103,8 @@ class CustomerController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Customer moved to trash successfully.'
+                'status' => 'success',
+                'message' => 'Customer moved to trash successfully'
             ]);
         }
 
@@ -109,6 +112,9 @@ class CustomerController extends Controller
             ->with('success', 'Customer moved to trash successfully.');
     }
 
+    /**
+     * Restore the specified customer from trash.
+     */
     public function restore($id)
     {
         $customer = Customer::onlyTrashed()->findOrFail($id);
@@ -116,8 +122,8 @@ class CustomerController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Customer restored successfully.',
+                'status' => 'success',
+                'message' => 'Customer restored successfully',
                 'customer' => $customer
             ]);
         }
@@ -126,6 +132,9 @@ class CustomerController extends Controller
             ->with('success', 'Customer restored successfully.');
     }
 
+    /**
+     * Permanently delete the specified customer from trash.
+     */
     public function forceDelete($id)
     {
         $customer = Customer::onlyTrashed()->findOrFail($id);
@@ -133,8 +142,8 @@ class CustomerController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Customer permanently deleted.'
+                'status' => 'success',
+                'message' => 'Customer permanently deleted'
             ]);
         }
 
